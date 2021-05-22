@@ -1,6 +1,6 @@
 """
 TrueConf PRTG Monitoring sensor [v1.0]
-    Ivan T (https://wwww.sys-admin.su)
+    Ivan T (https://www.sys-admin.su)
 
 Docs:
 https://developers.trueconf.ru/api/server/
