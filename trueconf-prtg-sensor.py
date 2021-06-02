@@ -1,5 +1,5 @@
 """
-TrueConf PRTG Monitoring sensor [v1.0]
+TrueConf PRTG Monitoring sensor [v1.1]
     Ivan T (https://www.sys-admin.su)
 
 Docs:
@@ -12,7 +12,7 @@ import requests
 import urllib3
 import datetime
 import re
-from sys import argv
+from sys import argv, exit
 
 
 def make_request(path, params):
@@ -32,7 +32,9 @@ def make_request(path, params):
         if r.status_code == 200:
             return {'error': False, 'data': r}
         else:
-            return_error("HTTP Request error. Error message {}".format(r.text))
+            msg = json.loads(r.text.encode('utf-8'))
+            msg = json.dumps(msg, ensure_ascii=False)
+            return_error("HTTP Request error. Error message: {}".format(msg))
 
 
 def get_users():
@@ -128,7 +130,7 @@ def get_eventlog(time_min):
     - 1000 is maximum page size
     - default page is 1, not 0
     """
-    dt_now = datetime.datetime.now().strftime("%Y-%d-%m %H:%M:%S")
+    dt_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     dt_target = (datetime.datetime.now() - datetime.timedelta(minutes=time_min)).strftime("%Y-%m-%d %H:%M:%S")
 
     # Get total log (can take a long time)
@@ -256,6 +258,7 @@ if __name__ == '__main__':
             api_server = 'https://{}:{}/api/v{}/'.format(argv[2], argv[3], argv[4])
         else:
             return_error("Argument error")
+            exit()
     except Exception as e:
         return_error("Python runtime error. Message: {}".format(e.args[0]))
     else:
