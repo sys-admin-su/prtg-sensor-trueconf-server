@@ -1,10 +1,11 @@
 """
-TrueConf PRTG Monitoring sensor [v1.1]
+TrueConf PRTG Monitoring sensor [v1.2]
     Ivan T (https://www.sys-admin.su)
 
 Docs:
 https://developers.trueconf.ru/api/server/
 https://www.paessler.com/manuals/prtg/custom_sensors
+https://www.paessler.com/manuals/prtg/custom_sensors#advanced_sensors
 """
 
 import json
@@ -26,6 +27,8 @@ def make_request(path, params):
         param = {**param, **params}
     try:
         r = requests.get(url, headers=header, params=param, verify=False)
+    except requests.exceptions.ConnectionError as err:
+        return_error("API connection error. Message: {}".format(err.args[0]))
     except Exception as err:
         return_error("Python runtime error. Message: {}".format(err.args[0]))
     else:
@@ -186,11 +189,11 @@ def main():
         prtg_dict["prtg"]["result"].append({"channel": "Пользователей онлайн",
                                                 "value": users['users_online'],
                                                 "float": 0,
-                                                "limitmode": 1})
+                                                "limitmode": 0})
         prtg_dict["prtg"]["result"].append({"channel": "Пользователей офлайн",
                                                 "value": users['users_offline'],
                                                 "float": 0,
-                                                "limitmode": 1})
+                                                "limitmode": 0})
 
     # Conferences - list and active/not active
     conferences = get_conferences(raw=True)
@@ -198,15 +201,15 @@ def main():
         prtg_dict["prtg"]["result"].append({"channel": "Конференций всего",
                                                 "value": conferences['conferences_total'],
                                                 "float": 0,
-                                                "limitmode": 1})
+                                                "limitmode": 0})
         prtg_dict["prtg"]["result"].append({"channel": "Конференций запущено",
                                             "value": conferences['conferences_running'],
                                             "float": 0,
-                                            "limitmode": 1})
+                                            "limitmode": 0})
         prtg_dict["prtg"]["result"].append({"channel": "Конференций остановлено",
                                             "value": conferences['conferences_stopped'],
                                             "float": 0,
-                                            "limitmode": 1})
+                                            "limitmode": 0})
 
     # Users and guests in conferences
     conference_users = get_conf_users()
@@ -214,15 +217,15 @@ def main():
         prtg_dict["prtg"]["result"].append({"channel": "Участников в конференциях всего",
                                                 "value": conference_users['total_users'],
                                                 "float": 0,
-                                                "limitmode": 1})
+                                                "limitmode": 0})
         prtg_dict["prtg"]["result"].append({"channel": "Пользователей в конференциях",
                                             "value": conference_users['users'],
                                             "float": 0,
-                                            "limitmode": 1})
+                                            "limitmode": 0})
         prtg_dict["prtg"]["result"].append({"channel": "Гостей в конференциях",
                                             "value": conference_users['guests'],
                                             "float": 0,
-                                            "limitmode": 1})
+                                            "limitmode": 0})
 
     # Errors in 5 min
     log_errors = get_eventlog(5)
@@ -230,22 +233,22 @@ def main():
         prtg_dict["prtg"]["result"].append({"channel": "Ошибок авторизации в пользовательской части, за 5 минут",
                                                 "value": log_errors['user_login_errors'],
                                                 "float": 0,
-                                                "limitmode": 1})
+                                                "limitmode": 0})
         prtg_dict["prtg"]["result"].append({"channel": "Ошибок авторизации в панели администратора, за 5 минут",
                                             "value": log_errors['admin_login_errors'],
                                             "float": 0,
-                                            "limitmode": 1})
+                                            "limitmode": 0})
     # Errors in 1 min
     log_errors = get_eventlog(1)
     if not log_errors['error']:
         prtg_dict["prtg"]["result"].append({"channel": "Ошибок авторизации в пользовательской части, за 1 минуту",
                                                 "value": log_errors['user_login_errors'],
                                                 "float": 0,
-                                                "limitmode": 1})
+                                                "limitmode": 0})
         prtg_dict["prtg"]["result"].append({"channel": "Ошибок авторизации в панели администратора, за 1 минуту",
                                             "value": log_errors['admin_login_errors'],
                                             "float": 0,
-                                            "limitmode": 1})
+                                            "limitmode": 0})
 
     return prtg_dict
 
